@@ -1,4 +1,4 @@
-﻿// Copyright © Microsoft Corporation.  All Rights Reserved.
+// Copyright © Microsoft Corporation.  All Rights Reserved.
 // This code released under the terms of the 
 // Microsoft Public License (MS-PL, http://opensource.org/licenses/ms-pl.html.)
 //
@@ -122,7 +122,10 @@ namespace SampleQueries
                 select new
                 {
                     Id = c.CustomerID,
-                    FirstOrder = c.Orders.OrderBy(i => i.OrderDate).Select(i => i.OrderDate).FirstOrDefault()
+                    FirstOrder = c.Orders
+                                    .OrderBy(i => i.OrderDate)
+                                    .Select(i => i.OrderDate)
+                                    .FirstOrDefault()
                 }).Where(i => !i.FirstOrder.Equals(default(DateTime)));
 
             foreach (var customer in customers)
@@ -140,7 +143,10 @@ namespace SampleQueries
                  select new
                  {
                      Customer = c,
-                     FirstOrder = c.Orders.OrderBy(i => i.OrderDate).Select(i => i.OrderDate).FirstOrDefault()
+                     FirstOrder = c.Orders
+                                    .OrderBy(i => i.OrderDate)
+                                    .Select(i => i.OrderDate)
+                                    .FirstOrDefault()
                  })
                 .Where(i => !i.FirstOrder.Equals(default(DateTime)))
                 .OrderByDescending(i => i.FirstOrder.Year)
@@ -251,8 +257,12 @@ namespace SampleQueries
                          select new
                          {
                              City = cityGroup.Key,
-                             SummOfOrders = cityGroup.ToList().Select(o => o.Orders.Select(t => t.Total).Sum()).Average(),
-                             CountOfOrders = cityGroup.ToList().Select(o => o.Orders.Count()).Average()
+                             SummOfOrders = cityGroup.ToList()
+                                                      .Select(o => o.Orders.Select(t => t.Total).Sum())
+                                                      .Average(),
+                             CountOfOrders = cityGroup.ToList()
+                                                      .Select(o => o.Orders.Count())
+                                                      .Average()
                          };
             foreach (var city in cities)
             {
@@ -273,7 +283,11 @@ namespace SampleQueries
                                      MonthOrders = from o in c.Orders
                                                    group o by o.OrderDate.Month into monthGroup
                                                    orderby monthGroup.Key
-                                                   select new { Month = monthGroup.Key, Count = monthGroup.Count() }
+                                                   select new { Month = monthGroup.Key, Average = (monthGroup
+                                                                                                        .GroupBy(i=>i.OrderDate.Year)
+                                                                                                        .Select(i=>i.Count())
+                                                                                                        .Average())
+                                                   }
                                  };
 
             var averageByYear = from c in dataSource.Customers
